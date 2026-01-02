@@ -69,8 +69,6 @@ This project is currently in the Data Engineering phase. The next steps focus on
 3. Parallel Corpus Research
    - Investigating correlations between semantic topics and phonetic structures (e.g., Do verses about 'War' utilize specific meters?).
 
-## License
-MIT
 
 ## Acknowledgments
 Data structure based on WisdomLib/Vedic textual archives.
