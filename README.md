@@ -1,74 +1,80 @@
-# Sanskrit ML Analysis
+# Rigveda Semantic Search Engine
 
 ## Overview
-This project implements a data processing pipeline to parse, structure, and analyze ancient Sanskrit texts, including the **Rigveda**, the oldest of the sacred Vedic Sanskrit texts.
+This project is an end-to-end Machine Learning pipeline and interactive web application designed to explore the **Rigveda**, the oldest of the sacred Vedic Sanskrit texts. 
 
-The core script transforms complex, deeply nested hierarchical data (organized by *Mandala* → *Sukta* → *Verse*) into a flat, machine-readable **Pandas DataFrame**. This structure serves as a foundational "Parallel Corpus" for downstream Natural Language Processing (NLP) and Digital Humanities research, enabling simultaneous analysis of the original Sanskrit (phonetics/meter) and English translations (semantics).
+By transforming complex, deeply nested hierarchical data into a flat Parallel Corpus and passing it through a multilingual Large Language Model (LLM), this tool allows users to search ancient scriptures using modern **Semantic Vector Search**. Instead of relying on exact keyword matches, the engine understands the abstract meaning of a user's query (e.g., "the creation of the universe" or "chariots of war") and returns the most conceptually relevant Sanskrit verses and their English translations.
 
-## The Data Problem
-The raw data exists in a nested dictionary format where structural inconsistencies (e.g., varying depths for `samhita` vs `padapatha` text) make direct analysis difficult.
+## The Problem: Beyond Keyword Search
+The Rigveda is massive, ancient, and highly poetic. Traditional keyword search fails when exploring these texts because a user might search for "fire," while the translation uses "flame," "Agni," or "oblations." 
 
-**Input Structure:**
-`Mandala -> Sukta -> Verse -> {Nested Dictionary of Devanagari, Transliteration, Translations}`
+To solve this, the project uses **NLP Embeddings** to map the abstract concepts of the text into a 384-dimensional vector space, allowing for similarity matching based on *meaning* rather than exact phrasing.
 
-**Output Structure:**
-A clean, tabular DataFrame where every row represents a single *Rik* (verse) with aligned attributes.
+## Tech Stack & Architecture
+- **Frontend:** Streamlit (Cached data and model loading for instant UI response)
+- **Machine Learning:** Hugging Face `SentenceTransformers` (`paraphrase-multilingual-MiniLM-L12-v2`)
+- **Vector Math:** Scikit-Learn (`cosine_similarity`)
+- **Data Engineering:** Pandas, NumPy
+- **Storage:** Parquet (Compressed columnar storage bypassing standard CSV limits)
 
 ## Features
-- **Robust Parsing:** Handles exceptions and irregular schema structures (e.g., missing keys for specific verses).
-- **Text Normalization:** Extracts both:
-  - `sanskrit_verse`: Raw Devanagari text (suitable for string matching).
-  - `display_sanskrit`: Accented Vedic text with Svaras (suitable for phonetic/prosody analysis).
-- **Parallel Text Alignment:** Aligns the Sanskrit source with English translations for bitext analysis.
-
-## Prerequisites
-* Python 3.x
-* Pandas
-
-```bash
-pip install pandas
-```
+- **Semantic Retrieval Engine:** Computes cosine similarity between user queries and 10,000+ Vedic verses in real-time.
+- **Robust Data Pipeline:** Parses irregular, nested dictionary structures (Mandala → Sukta → Verse) into a clean, machine-readable format.
+- **Lightning-Fast UI:** Utilizes Streamlit's `@st.cache_resource` and `@st.cache_data` decorators to hold the 384-dimension LLM and the vector matrix in memory.
+- **Parallel Text Alignment:** Aligns the raw Devanagari text, accented Vedic text (Svaras), and English translations for side-by-side analysis.
 
 ## Data Dictionary
-The resulting DataFrame (cleaned_df) contains the following columns:
+The underlying dataset (`rigveda_clean.parquet`) contains the following structure:
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
-| mandala | String | The book number (1-10) of the Rigveda. |
-| sukta | String | The hymn number within the Mandala. |
-| verse_num | Int | The specific verse (Rik) number. |
-| sanskrit_verse | String | Samhita text. Continuous recitation format. Best for general text processing. |
-| display_sanskrit | String | Accented text. Contains Vedic accents (Svaras). Essential for analyzing meter and chanting intonation. |
-| english_translation | String | English translation of the verse. Used for semantic analysis and topic modeling. |
+| `mandala` | String | The book number (1-10) of the Rigveda. |
+| `sukta` | String | The hymn number within the Mandala. |
+| `verse_num` | Int | The specific verse (Rik) number. |
+| `sanskrit_verse` | String | Samhita text. Continuous recitation format. |
+| `display_sanskrit` | String | Accented text containing Vedic Svaras. |
+| `english_translation` | String | English translation of the verse. |
+| `embedding` | Array[Float] | The 384-dimensional vector representation of the translation. |
 
-## Usage
-The extraction logic iterates through the source dictionary to flatten the structure:
+## Setup & Installation
+1. Clone the repository and navigate to the directory:
+```bash
+git clone [https://github.com/RamLanka05/Sanskrit-Analysis.git](https://github.com/RamLanka05/Sanskrit-Analysis.git)
+cd Sanskrit-Analysis
 
-```python
-# (Simplified logic)
-import pandas as pd
+2. Create and activate a virtual environment:
 
-# Iterate through Mandalas and Suktas
-# Extract Samhita and Translation
-# Handle KeyErrors via try/except blocks
+```bash
+# Windows
+python -m venv .venv
+.\.venv\Scripts\activate
 
-print(cleaned_df.head())
+# Mac/Linux
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install the required dependencies:
+
+```bash
+pip install streamlit pandas numpy scikit-learn sentence-transformers pyarrow
+```
+
+4. Run the application:
+
+```bash
+streamlit run app.py
 ```
 
 ## Roadmap & Future Work
-This project is currently in the Data Engineering phase. The next steps focus on NLP and Exploratory Data Analysis (EDA):
+With the core semantic engine and UI deployed, future iterations will focus on advanced exploratory data analysis:
 
-1. Linguistic Analysis (Sanskrit)
-   - Sandhi Splitting: Implement tools (e.g., CLTK) to split merged compound words.
-   - Meter Identification: Algorithmic counting of syllables to classify verses by meter (Gayatri, Tristubh, etc.).
+1. Visual Data Mapping: Implement UMAP/t-SNE dimensionality reduction to create a 2D interactive scatter plot showing the semantic "clusters" of the Rigveda.
 
-2. Semantic Analysis (English)
-   - Topic Modeling: Use LDA to cluster verses by theme (Cosmology, Ritual, Dialogue).
-   - Named Entity Recognition: Map the frequency of deities (Agni, Indra, Soma) across different Mandalas.
+2. Linguistic Analysis: Implement Sandhi Splitting tools (e.g. CLTK) to split merged compound Sanskrit words.
 
-3. Parallel Corpus Research
-   - Investigating correlations between semantic topics and phonetic structures (e.g., Do verses about 'War' utilize specific meters?).
+3. Named Entity Recognition: Map the frequency and contextual sentiment of specific deities (Agni, Indra, Soma) across different Mandalas.
 
 
 ## Acknowledgments
-Data structure based on WisdomLib/Vedic textual archives.
+Original raw data structure based on WisdomLib/Vedic textual archives.
