@@ -44,7 +44,7 @@ with c2:
 if search_clicked and query:
     query_embedding = model.encode([query])
     similarity_scores = cosine_similarity(query_embedding, mat)
-    top_indices = np.argsort(similarity_scores[0])[::-1][:5]
+    top_indices = np.argsort(similarity_scores[0])[::-1][:10]
     top_results = df.iloc[top_indices].copy()
     top_results['score'] = similarity_scores[0][top_indices]
     
