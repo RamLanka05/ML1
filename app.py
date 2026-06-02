@@ -2,6 +2,7 @@ import sentence_transformers
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="Rigveda Vector Search", page_icon="🕉️", layout="centered")
@@ -64,3 +65,53 @@ if search_clicked and query:
             st.markdown(f"**Sanskrit:** {row['sanskrit_verse']}")
             
             st.divider()
+    
+    st.subheader("🗺️ Vedic Concept Space Map (t-SNE Clusters)")
+    st.markdown("""
+    * **How to read this map:** Each dot represents an entire verse. Verses that sit close together share an abstract semantic or philosophical theme. 
+    * **Highlighted Dots:** The bright yellow/gold stars represent the top matches to your search query.
+    """)
+
+    # Setup plotting layers to prevent high-dimensional frontend lag
+    df_plot = df.copy()
+    df_plot['similarity_score'] = similarity_scores[0]
+    df_plot['is_match'] = 'Background Corpus'
+    df_plot.loc[top_indices, 'is_match'] = f"Top Results"
+
+    # Add a clean text wrap preview for the interactive hover popup
+    df_plot['hover_preview'] = (
+        "M" + df_plot['mandala'].astype(str) + 
+        ", S" + df_plot['sukta'].astype(str) + 
+        ", V" + df_plot['verse_num'].astype(str) + "<br>" +
+        df_plot['english_translation'].str.wrap(50).str.replace('\n', '<br>')
+    )
+
+    # Render the scatter plot matrix
+    fig = px.scatter(
+        df_plot.sort_values(by='is_match'), # Sort to guarantee matches draw on top layer
+        x='x_coord',
+        y='y_coord',
+        color='is_match',
+        color_discrete_map={
+            'Background Corpus': 'rgba(150, 150, 150, 0.25)', 
+            'Top Results': '#FFD700'                            
+        },
+        size=df_plot['is_match'].apply(lambda x: 14 if x != 'Background Corpus' else 4),
+        hover_data={'x_coord': False, 'y_coord': False, 'is_match': False, 'hover_preview': True},
+        labels={'is_match': 'Layer'},
+        template='plotly_dark' 
+    )
+
+    # Polish chart canvas padding, boundaries, and alignment parameters
+    fig.update_layout(
+        height=600,
+        margin=dict(l=0, r=0, b=0, t=10),
+        legend=dict(orientation="h", y=1.02, x=0, xanchor="left"),
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, title=""),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, title="")
+    )
+    
+    # Isolate tooltip strings to target hover metadata blocks cleanly
+    fig.update_traces(hovertemplate="%{customdata[2]}<extra></extra>")
+
+    st.plotly_chart(fig, use_container_width=True)
