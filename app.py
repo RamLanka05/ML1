@@ -177,4 +177,4 @@ with right_col:
     # Point exactly to index [0] where our rich HTML string is bundled
     fig.update_traces(hovertemplate="%{customdata[0]}<extra></extra>")
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
