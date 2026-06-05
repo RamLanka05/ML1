@@ -24,14 +24,14 @@ model = load_model()
 with st.sidebar:
     st.header("About This Engine")
     st.markdown("""
-    This tool uses a 384-dimensional **Large Language Model** to map the abstract concepts of the Rigveda. 
+    This tool uses a 384-dimensional Large Language Model to map the abstract concepts of the Rigveda. 
     
     Instead of relying on exact keyword matches, it computes the *cosine similarity* between your query and the text, returning verses based on pure meaning.
     """)
 
     st.divider()
     st.markdown("""
-    **Tech Stack:**
+    Tech Stack:
     - [Sentence-Transformers `paraphrase-multilingual-MiniLM-L12-v2`](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) — model card
     - [Sentence-Transformers docs](https://www.sbert.net/) — library docs and usage
     - [Scikit-Learn](https://scikit-learn.org/stable/) — ML utilities & cosine similarity
@@ -96,10 +96,10 @@ with left_col:
 
 # --- RIGHT COLUMN: PERMANENT CLUSTER MAP ---
 with right_col:
-    st.subheader("🗺️ Vedic Concept Space Map (t-SNE Clusters)")
+    st.subheader("Vedic Concept Space Map (t-SNE Clusters)")
     st.markdown("""
-    * **How to read this map:** Each dot represents an entire verse. 
-    * **Navigation:** Drag to box-zoom. Double-click to reset. Hover for verse details.
+    * How to read this map: Each dot represents an entire verse. 
+    * Navigation: Drag to box-zoom. Double-click to reset. Hover for verse details.
     """)
 
     # --- THE RICH TOOLTIP UPGRADE ---
